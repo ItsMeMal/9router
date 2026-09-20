@@ -582,6 +582,48 @@ export async function POST(request) {
           break;
         }
 
+        case "chatgpt-web": {
+          let sessionToken = apiKey;
+          if (sessionToken.startsWith("__Secure-next-auth.session-token=")) {
+            sessionToken = sessionToken.slice("__Secure-next-auth.session-token=".length);
+          }
+          const res = await fetch("https://chatgpt.com/backend-api/conversation", {
+            method: "POST",
+            headers: {
+              Accept: "text/event-stream",
+              "Accept-Encoding": "gzip, deflate, br, zstd",
+              "Accept-Language": "en-US,en;q=0.9",
+              "Cache-Control": "no-cache",
+              "Content-Type": "application/json",
+              Origin: "https://chatgpt.com",
+              Pragma: "no-cache",
+              Referer: "https://chatgpt.com/",
+              "Sec-Ch-Ua": '"Google Chrome";v="136", "Chromium";v="136", "Not(A:Brand";v="24"',
+              "Sec-Ch-Ua-Mobile": "?0",
+              "Sec-Ch-Ua-Platform": '"macOS"',
+              "Sec-Fetch-Dest": "empty",
+              "Sec-Fetch-Mode": "cors",
+              "Sec-Fetch-Site": "same-origin",
+              "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36",
+              Cookie: `__Secure-next-auth.session-token=${sessionToken}`,
+            },
+            body: JSON.stringify({
+              action: "next",
+              messages: [{ id: crypto.randomUUID(), author: { role: "user" }, content: { content_type: "text", parts: ["ping"] }, metadata: {} }],
+              model: "gpt-4o",
+              parent_message_id: crypto.randomUUID(),
+            }),
+            signal: AbortSignal.timeout(8000),
+          });
+          if (res.status === 401 || res.status === 403) {
+            isValid = false;
+            error = "Invalid session cookie — re-paste __Secure-next-auth.session-token from chatgpt.com DevTools → Cookies";
+          } else {
+            isValid = true;
+          }
+          break;
+        }
+
         case "qoder": {
           // PAT (pt-...) needs the job-token exchange before it can sign
           // anything — the generic OpenAI-compat probe below can't validate it.

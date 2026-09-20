@@ -85,6 +85,11 @@
     "validateUrl": "https://llm.chutes.ai/v1/models",
     "format": "openai"
   },
+  "chatgpt-web": {
+    "baseUrl": "https://chatgpt.com/backend-api/conversation",
+    "format": "chatgpt-web",
+    "authType": "cookie"
+  },
   "claude": {
     "baseUrl": "https://api.anthropic.com/v1/messages",
     "format": "claude",

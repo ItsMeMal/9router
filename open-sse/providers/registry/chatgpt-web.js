@@ -1,0 +1,37 @@
+export default {
+  id: "chatgpt-web",
+  priority: 140,
+  alias: "chatgpt-web",
+  aliases: ["cgw", "chatgpt-web"],
+  uiAlias: "cgw",
+  display: {
+    name: "ChatGPT Web",
+    icon: "smart_toy",
+    color: "#10A37F",
+    textIcon: "CGW",
+    website: "https://chatgpt.com",
+    notice: {
+      signupUrl: "https://chatgpt.com",
+    },
+  },
+  category: "webCookie",
+  authType: "cookie",
+  authHint: "Paste your __Secure-next-auth.session-token cookie value from chatgpt.com",
+  transport: {
+    baseUrl: "https://chatgpt.com/backend-api/conversation",
+    format: "chatgpt-web",
+    authType: "cookie",
+  },
+  models: [
+    { id: "gpt-5", name: "GPT-5" },
+    { id: "gpt-5-thinking", name: "GPT-5 (Thinking)" },
+    { id: "gpt-5-mini", name: "GPT-5 Mini" },
+    { id: "gpt-5-mini-thinking", name: "GPT-5 Mini (Thinking)" },
+    { id: "gpt-4o", name: "GPT-4o" },
+    { id: "gpt-4o-mini", name: "GPT-4o Mini" },
+    { id: "o1", name: "o1" },
+    { id: "o1-mini", name: "o1-mini" },
+    { id: "o1-pro", name: "o1 Pro" },
+  ],
+  passthroughModels: true,
+};
