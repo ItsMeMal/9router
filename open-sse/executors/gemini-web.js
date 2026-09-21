@@ -11,6 +11,7 @@ import {
   parseGeminiFrames,
   mapModelHeader,
   parseOpenAIMessages,
+  extractThinkingDelta,
 } from "../utils/geminiWebHelpers.js";
 
 const GEMINI_INIT_URL = "https://gemini.google.com/app";
@@ -299,15 +300,21 @@ export class GeminiWebExecutor extends BaseExecutor {
     const raw = await this.readRawText(body, signal);
     const frames = parseGeminiFrames(raw);
     let fullContent = "";
+    const thinkingParts = [];
 
     for (const frame of frames) {
       const text = extractTextDelta(frame);
       if (text && typeof text === "string") {
         fullContent = text; // full accumulated text
       }
+      const thinking = extractThinkingDelta(frame);
+      if (thinking && typeof thinking === "string") {
+        thinkingParts.push(thinking);
+      }
     }
 
     const msg = { role: "assistant", content: fullContent };
+    if (thinkingParts.length > 0) msg.reasoning_content = thinkingParts.join("");
     const tokenEstimate = Math.max(1, Math.round(fullContent.length / 4));
 
     return new Response(
@@ -343,8 +350,15 @@ export class GeminiWebExecutor extends BaseExecutor {
           );
 
           let fullText = "";
+          const thinkingParts = [];
 
           for await (const frame of readStream(body, signal)) {
+            // Check for thinking block first
+            const thinking = extractThinkingDelta(frame);
+            if (thinking && typeof thinking === "string") {
+              thinkingParts.push(thinking);
+            }
+
             const text = extractTextDelta(frame);
             if (!text || typeof text !== "string") continue;
 
@@ -367,6 +381,22 @@ export class GeminiWebExecutor extends BaseExecutor {
                 );
               }
             }
+          }
+
+          // Emit collected thinking as reasoning_content
+          if (thinkingParts.length > 0) {
+            controller.enqueue(
+              encoder.encode(
+                sseChunk({
+                  id: cid,
+                  object: "chat.completion.chunk",
+                  created,
+                  model,
+                  system_fingerprint: null,
+                  choices: [{ index: 0, delta: { reasoning_content: thinkingParts.join("") }, finish_reason: null, logprobs: null }],
+                }),
+              ),
+            );
           }
 
           controller.enqueue(

@@ -124,6 +124,8 @@ import p120 from "./fish-audio.js";
 import p121 from "./alitp-intl.js";
 import p122 from "./xquik.js";
 import p124 from "./chatgpt-web.js";
+import p125 from "./gemini-web.js";
+import p126 from "./deepseek-web.js";
 export default [
   p0,
   p1,
@@ -248,4 +250,6 @@ export default [
   p121,
   p122,
   p124,
+  p125,
+  p126,
 ];

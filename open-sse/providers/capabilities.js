@@ -280,6 +280,12 @@ export const PROVIDER_CAPABILITIES = {
   "ollama": {
     "deepseek-v4.1-flash:cloud": { vision: true, reasoning: true, thinkingFormat: "deepseek", contextWindow: 1000000, maxOutput: 384000 },
   },
+  // DeepSeek Web — browser cookie provider, same model capabilities as API.
+  // deepseek-chat (V3) supports vision; deepseek-reasoner (R1) is text-only.
+  "deepseek-web": {
+    "deepseek-chat":      { vision: true, reasoning: true, thinkingFormat: "deepseek", contextWindow: 65536, maxOutput: 8192 },
+    "deepseek-reasoner":  { reasoning: true, thinkingFormat: "deepseek", contextWindow: 65536, maxOutput: 8192 },
+  },
 };
 
 /**

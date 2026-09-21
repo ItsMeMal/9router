@@ -176,6 +176,34 @@ export function mapModelHeader(modelId) {
   return { "x-goog-ext-525001261-jspb": value };
 }
 
+/**
+ * Extract thinking/reasoning text from a Gemini Web frame (for thinking models).
+ * Thinking content appears as candidate[2] — an array of string chunks
+ * (same shape as candidate[1] but for reasoning blocks).
+ * @param {any[]} frame
+ * @returns {string|null}
+ */
+export function extractThinkingDelta(frame) {
+  try {
+    if (!Array.isArray(frame) || frame[2] === undefined) return null;
+    const inner = JSON.parse(frame[2]);
+    const candidates = inner?.[4];
+    if (!Array.isArray(candidates) || candidates.length === 0) return null;
+
+    const candidate = candidates[0];
+    if (!Array.isArray(candidate)) return null;
+
+    // candidate[2] = thinking/text block array (per Gemini internal proto)
+    const thinkingArr = candidate[2];
+    if (!Array.isArray(thinkingArr) || thinkingArr.length === 0) return null;
+
+    const chunk = thinkingArr.find((c) => typeof c === "string" && c.length > 0);
+    return chunk || null;
+  } catch {
+    return null;
+  }
+}
+
 // ---------- Message parsing ----------
 
 /**
