@@ -248,13 +248,18 @@ export class ChatGPTWebExecutor extends BaseExecutor {
       "User-Agent": CHATGPT_USER_AGENT,
     };
 
-    // Handle cookie from credentials
+    // Handle cookie from credentials — support full cookie string or bare session token
     if (credentials.apiKey) {
-      let token = credentials.apiKey;
-      if (token.startsWith("__Secure-next-auth.session-token=")) {
-        token = token.slice("__Secure-next-auth.session-token=".length);
+      let cookieHeader = credentials.apiKey;
+      if (!credentials.apiKey.includes("=")) {
+        // Bare value (no key=) — wrap in session token
+        cookieHeader = `__Secure-next-auth.session-token=${credentials.apiKey}`;
+      } else if (credentials.apiKey.startsWith("__Secure-next-auth.session-token=")) {
+        // Already has the key prefix — use as-is
+        cookieHeader = credentials.apiKey;
       }
-      headers["Cookie"] = `__Secure-next-auth.session-token=${token}`;
+      // else: full cookie string with multiple key=value pairs — use as-is
+      headers["Cookie"] = cookieHeader;
     }
 
     log?.info?.("CHATGPT-WEB", `Query to ${model} (slug=${modelSlug}), len=${prompt.length}`);

@@ -583,10 +583,17 @@ export async function POST(request) {
         }
 
         case "chatgpt-web": {
-          let sessionToken = apiKey;
-          if (sessionToken.startsWith("__Secure-next-auth.session-token=")) {
-            sessionToken = sessionToken.slice("__Secure-next-auth.session-token=".length);
+          // Support full cookie string or just the session token value
+          let cookieHeader = apiKey;
+          if (!apiKey.includes("=")) {
+            // Bare value (no key=) — wrap in session token
+            cookieHeader = `__Secure-next-auth.session-token=${apiKey}`;
+          } else if (apiKey.startsWith("__Secure-next-auth.session-token=")) {
+            // Already has the key prefix — use as-is
+            cookieHeader = apiKey;
           }
+          // else: full cookie string with multiple key=value pairs — use as-is
+
           const res = await fetch("https://chatgpt.com/backend-api/conversation", {
             method: "POST",
             headers: {
@@ -605,7 +612,7 @@ export async function POST(request) {
               "Sec-Fetch-Mode": "cors",
               "Sec-Fetch-Site": "same-origin",
               "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36",
-              Cookie: `__Secure-next-auth.session-token=${sessionToken}`,
+              Cookie: cookieHeader,
             },
             body: JSON.stringify({
               action: "next",
@@ -617,7 +624,7 @@ export async function POST(request) {
           });
           if (res.status === 401 || res.status === 403) {
             isValid = false;
-            error = "Invalid session cookie — re-paste __Secure-next-auth.session-token from chatgpt.com DevTools → Cookies";
+            error = "Cookie expired or invalid — open chatgpt.com, open DevTools → Application → Cookies, copy all cookies as a string (e.g. '__Secure-next-auth.session-token=xxx; _puid=yyy')";
           } else {
             isValid = true;
           }
