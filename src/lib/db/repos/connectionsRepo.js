@@ -7,7 +7,7 @@ const OPTIONAL_FIELDS = [
   "accessToken", "refreshToken", "expiresAt", "tokenType",
   "scope", "projectId", "apiKey", "testStatus",
   "lastTested", "lastError", "lastErrorAt", "rateLimitedUntil", "expiresIn", "errorCode",
-  "consecutiveUseCount", "idToken", "lastRefreshAt",
+  "consecutiveUseCount", "idToken", "lastRefreshAt", "unavailableUntil",
 ];
 
 const MODEL_LOCK_PREFIX = "modelLock_";
@@ -22,6 +22,7 @@ function resetHealthStateOnActivation(existing, patch) {
     lastErrorAt: Object.hasOwn(patch, "lastErrorAt") ? patch.lastErrorAt : null,
     errorCode: null,
     rateLimitedUntil: null,
+    unavailableUntil: null,
     backoffLevel: 0,
   };
 

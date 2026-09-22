@@ -113,6 +113,12 @@ async function runHeavyStartup() {
       .catch((e) => console.log("[AutoPing] scheduler start failed:", e.message));
   }
 
+  // Start web cookie health check scheduler — probes expired webCookie category
+  // provider connections and marks them unavailable, preventing 401 errors.
+  import("@/shared/services/webCookieHealth")
+    .then(({ startWebCookieHealth }) => startWebCookieHealth())
+    .catch((e) => console.log("[WebCookieHealth] scheduler start failed:", e.message));
+
   // Proactive OAuth token refresh (e.g. grok-cli ~6h TTL). Module is idempotent
   // and also started from custom-server.js when that entry is used.
   import("@/sse/services/backgroundTokenRefresh.js")
