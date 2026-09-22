@@ -57,6 +57,21 @@ async function trySqlJs() {
 }
 
 async function initAdapter() {
+  // Try Supabase/Postgres first if DATABASE_URL is set
+  if (process.env.DATABASE_URL && process.env.DATABASE_URL.startsWith("postgres")) {
+    try {
+      const { createSupabaseAdapter } = await import("./adapters/supabaseAdapter.js");
+      const adapter = await createSupabaseAdapter();
+      if (!state.logged) {
+        console.log(`[DB] Driver: ${adapter.driver} | connected via DATABASE_URL`);
+        state.logged = true;
+      }
+      return adapter;
+    } catch (e) {
+      console.warn(`[DB] Supabase/Postgres failed: ${e.message}, falling back to SQLite`);
+    }
+  }
+
   ensureDirs();
   // Order per runtime:
   //   Bun:  bun:sqlite → sql.js
