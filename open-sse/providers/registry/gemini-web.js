@@ -22,9 +22,8 @@ export default {
     authType: "cookie",
   },
   models: [
-    { id: "gemini-3.0-pro", name: "Gemini 3.0 Pro" },
-    { id: "gemini-3.0-flash", name: "Gemini 3.0 Flash" },
-    { id: "gemini-3.0-flash-thinking", name: "Gemini 3.0 Flash Thinking" },
+    { id: "gemini-2.0-flash", name: "Gemini 2.0 Flash" },
+    { id: "gemini-2.0-flash-thinking", name: "Gemini 2.0 Flash Thinking" },
   ],
   thinkingConfig: {
     options: ["auto", "none"],
