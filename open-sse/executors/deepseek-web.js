@@ -130,6 +130,7 @@ function buildStreamingResponse(eventStream, model, cid, created, signal) {
 async function buildNonStreamingResponse(eventStream, model, cid, created, signal) {
   let fullContent = "";
   const thinkingParts = [];
+  let receivedDelta = false;
 
   for await (const chunk of extractContent(eventStream, signal)) {
     if (chunk.error) {
@@ -139,14 +140,18 @@ async function buildNonStreamingResponse(eventStream, model, cid, created, signa
     }
     if (chunk.thinking) thinkingParts.push(chunk.thinking);
     if (chunk.done) break;
-    if (chunk.delta) fullContent += chunk.delta;
+    if (chunk.delta) {
+      fullContent += chunk.delta;
+      receivedDelta = true;
+    }
   }
 
   const msg = { role: "assistant", content: fullContent };
   if (thinkingParts.length > 0) msg.reasoning_content = thinkingParts.join("");
 
-  const promptTokens = Math.ceil(fullContent.length / 4);
-  const completionTokens = Math.ceil(fullContent.length / 4);
+  // Token estimation as fallback (DeepSeek Web may not return usage in response)
+  const promptTokens = Math.ceil((fullContent.length + 100) / 4); // buffer for prompt
+  const completionTokens = receivedDelta ? Math.ceil(fullContent.length / 4) : Math.ceil((fullContent.length + 100) / 4);
 
   return new Response(JSON.stringify({
     id: cid, object: "chat.completion", created, model, system_fingerprint: null,
