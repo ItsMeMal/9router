@@ -665,38 +665,21 @@ export async function POST(request) {
         }
 
         case "gemini-web": {
-          // Validate cookie header has required cookies, then probe init page
-          let hasRequired = false;
+          // Cookie-based validation — just check format is present
+          // Real validation happens when the request is made (cookie refresh flow)
           let cookieHeader = apiKey;
-          if (apiKey.includes("__Secure-1PSID")) hasRequired = true;
-
-          if (!hasRequired) {
+          if (!apiKey.includes("=")) {
+            cookieHeader = `__Secure-1PSID=${apiKey}`;
+          }
+          // Check required cookies are present
+          const hasCookie = cookieHeader.includes("__Secure-1PSID=");
+          if (!hasCookie) {
             isValid = false;
-            error = "Missing required __Secure-1PSID cookie — paste your full Cookie header from gemini.google.com DevTools";
+            error = "Missing required __Secure-1PSID cookie — paste your full Cookie header from gemini.google.com";
           } else {
-            // Probe the init page — if it redirects to login or returns 401/403, cookie is expired
-            const probeRes = await fetch("https://gemini.google.com/app", {
-              method: "GET",
-              headers: {
-                "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36",
-                Cookie: cookieHeader,
-              },
-              redirect: "manual",
-              signal: AbortSignal.timeout(8000),
-            });
-            if (probeRes.status === 302 || probeRes.status === 401 || probeRes.status === 403) {
-              isValid = false;
-              error = "Session cookie expired — re-paste from gemini.google.com DevTools → Cookies";
-            } else {
-              // Check that page contains expected init tokens
-              const html = await probeRes.text();
-              if (html.includes("SNlM0e") || html.includes("cfb2h") || html.includes("FdrFJe")) {
-                isValid = true;
-              } else {
-                isValid = true;
-                error = "Cookie accepted, but init tokens not detected — this may be a restricted account";
-              }
-            }
+            // Accept cookie — actual validation happens on first use
+            isValid = true;
+            error = "Cookie accepted — will be validated on first use";
           }
           break;
         }
