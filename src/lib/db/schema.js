@@ -18,6 +18,7 @@ PRAGMA busy_timeout = 5000;
 // Declarative current schema. Used by syncSchemaFromTables() to
 // auto-add missing tables/columns/indexes after versioned migrations.
 // For destructive changes (drop/rename/type-change), write a migration file.
+/** @type {import('./adapter.js').SchemaDef} */
 export const TABLES = {
   _meta: {
     columns: {
